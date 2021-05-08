@@ -1,2 +1,2 @@
-#include "digraph.h"
+#include "wordnet.h"
 

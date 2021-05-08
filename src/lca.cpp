@@ -1,9 +1,6 @@
-#include "lca.h"
+#include "wordnet.h"
 
-LowestCommonAncestor::LowestCommonAncestor(const Digraph &dg)
-{
-    // TODO Implement
-}
+LowestCommonAncestor::LowestCommonAncestor(const Digraph &graph) : graph(graph) {}
 
 std::size_t LowestCommonAncestor::length(std::size_t v, std::size_t w) const
 {
