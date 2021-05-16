@@ -1,31 +1,24 @@
+#include <mutex>
+#include <queue>
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class Digraph
 {
 public:
-    template <class InputStream>
-    Digraph(InputStream && in)
-    {
-        // fixme simplify
-        while (in)
-        {
-            auto & hypernyms = edges.emplace_back();
-            std::size_t next;
-            in >> next;
-            while ('\n' != in.peek())
-            {
-                in.ignore();
-                in >> next;
-                hypernyms.push_back(next);
-            }
-            in.ignore();
-        }
-    }
+    Digraph(const std::string & filename);
+
+    // returns set of nodes adjacent to the given one
+    const std::unordered_set<std::size_t> & operator[](std::size_t v) const;
+
+    // prints adjacency lists to out
+    friend std::ostream & operator<<(std::ostream & out, const Digraph & graph);
+
 private:
-    std::vector<std::vector<std::size_t>> edges;
+    std::unordered_map<std::size_t, std::unordered_set<std::size_t>> edges;
 };
 
 class LowestCommonAncestor
@@ -46,26 +39,107 @@ public:
     std::size_t ancestor(const std::set<std::size_t> &, const std::set<std::size_t> &) const;
 
 private:
-    Digraph graph;
+    const Digraph graph;
+
+    struct Result
+    {
+        static constexpr std::size_t INVALID = std::numeric_limits<std::size_t>::max();
+
+        std::size_t ancestor = 0;
+        std::size_t length = INVALID;
+
+        operator bool() const
+        {
+            return length != INVALID;
+        }
+    };
+
+    class Cache
+    {
+        using Key = std::pair<std::size_t, std::size_t>;
+
+        struct Hash
+        {
+            std::size_t operator()(Key key) const noexcept;
+        };
+
+        std::unordered_map<Key, Result, Hash> data;
+        std::mutex mutex;
+
+    public:
+        Result & get(std::size_t, std::size_t);
+    };
+
+    mutable Cache cache;
+
+    Result bfs(const std::set<std::size_t> &, const std::set<std::size_t> &) const;
 };
 
 class WordNet
 {
+    using WordMap = std::unordered_map<std::string, std::set<std::size_t>>;
+
 public:
-    WordNet(const std::string & synsetsFile, const std::string & hypernymsFile);
+    WordNet(const std::string & synsets, const std::string & hypernyms);
 
     class iterator
     {
+    public:
         using iterator_category = std::forward_iterator_tag;
-        // To do
+        using value_type = WordMap::key_type;
+        using difference_type = typename WordMap::iterator::difference_type;
+        using pointer = const value_type *;
+        using reference = const value_type &;
+
+        iterator() = default;
+        iterator(const WordMap::iterator & it)
+            : it(it)
+        {
+        }
+
+        reference operator*() const
+        {
+            return it->first;
+        }
+
+        pointer operator->() const
+        {
+            return &it->first;
+        }
+
+        iterator & operator++()
+        {
+            ++it;
+            return *this;
+        }
+
+        iterator operator++(int)
+        {
+            auto tmp = *this;
+            ++it;
+            return tmp;
+        }
+
+        friend bool operator==(const iterator & lhs, const iterator & rhs)
+        {
+            return lhs.it == rhs.it;
+        }
+
+        friend bool operator!=(const iterator & lhs, const iterator & rhs)
+        {
+            return lhs.it != rhs.it;
+        }
+
+    private:
+        WordMap::iterator it;
     };
 
     // get iterator to list all nouns stored in WordNet
-    iterator nouns();
+    iterator begin();
     iterator end();
 
     // returns 'true' iff word is stored in WordNet
-    bool isNoun(const std::string &) const;
+    bool is_noun(const std::string &) const;
 
     // returns gloss of LCA of nouns
     std::string lca(const std::string &, const std::string &) const;
@@ -74,9 +148,10 @@ public:
     std::size_t distance(const std::string &, const std::string &) const;
 
 private:
-    LowestCommonAncestor graph;
-    std::unordered_map<std::string, std::set<std::size_t>> wordMap;
-    std::vector<std::string> glossary;
+    Digraph graph;
+    LowestCommonAncestor lowestCommonAncestor;
+    WordMap wordMap;
+    std::unordered_map<std::size_t, std::string> glossary;
 };
 
 class Outcast
@@ -88,5 +163,5 @@ public:
     std::string outcast(const std::vector<std::string> &);
 
 private:
-    WordNet wordnet;
+    WordNet & wordnet;
 };

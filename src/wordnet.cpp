@@ -1,31 +1,48 @@
 #include "wordnet.h"
 
-WordNet::WordNet(const std::string &synsetsFile, const std::string &hypernymsFile)
+#include <fstream>
+#include <sstream>
+
+WordNet::WordNet(const std::string & synsets, const std::string & hypernyms)
+    : graph(hypernyms)
+    , lowestCommonAncestor(graph)
 {
-    // TODO Implement
+    std::ifstream in(synsets);
+    std::size_t id;
+    while (in >> id) {
+        in.ignore();
+        std::string synonyms;
+        std::getline(in, synonyms, ',');
+        std::stringstream ss(synonyms);
+        while (ss >> synonyms) {
+            wordMap[std::move(synonyms)].insert(id);
+        }
+
+        std::getline(in, glossary[id]);
+    }
 }
 
-WordNet::iterator WordNet::nouns()
+WordNet::iterator WordNet::begin()
 {
-    // TODO Implement
+    return iterator(wordMap.begin());
 }
 
 WordNet::iterator WordNet::end()
 {
-    // TODO Implement
+    return iterator(wordMap.end());
 }
 
-bool WordNet::isNoun(const std::string &word) const
+bool WordNet::is_noun(const std::string & word) const
 {
-    // TODO Implement
+    return wordMap.find(word) != wordMap.end();
 }
 
-std::string WordNet::lca(const std::string &noun1, const std::string &noun2) const
+std::string WordNet::lca(const std::string & noun1, const std::string & noun2) const
 {
-    // TODO Implement
+    return glossary.at(lowestCommonAncestor.ancestor(wordMap.at(noun2), wordMap.at(noun1)));
 }
 
-std::size_t WordNet::distance(const std::string &noun1, const std::string &noun2) const
+std::size_t WordNet::distance(const std::string & noun1, const std::string & noun2) const
 {
-    // TODO Implement
+    return lowestCommonAncestor.length(wordMap.at(noun1), wordMap.at(noun2));
 }
