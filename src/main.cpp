@@ -12,10 +12,6 @@ int main()
         std::string action;
         std::cin >> action;
 
-        if (action == "exit") {
-            return 0;
-        }
-
         if (action == "is" || action == "has" || action == "noun") {
             std::string w;
             std::cin >> w;
