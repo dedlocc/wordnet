@@ -24,7 +24,7 @@ private:
 class LowestCommonAncestor
 {
 public:
-    LowestCommonAncestor(const Digraph &);
+    LowestCommonAncestor(Digraph);
 
     // calculates length of LCA path between nodes
     std::size_t length(std::size_t, std::size_t) const;
@@ -148,8 +148,7 @@ public:
     std::size_t distance(const std::string &, const std::string &) const;
 
 private:
-    Digraph graph;
-    LowestCommonAncestor lowestCommonAncestor;
+    LowestCommonAncestor graph;
     WordMap wordMap;
     std::unordered_map<std::size_t, std::string> glossary;
 };
@@ -157,11 +156,11 @@ private:
 class Outcast
 {
 public:
-    Outcast(WordNet &);
+    Outcast(const WordNet &);
 
     // returns outcast word
     std::string outcast(const std::vector<std::string> &);
 
 private:
-    WordNet & wordnet;
+    const WordNet & wordnet;
 };

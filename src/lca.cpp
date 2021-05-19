@@ -19,8 +19,8 @@ LCA::Result & LCA::Cache::get(std::size_t a, std::size_t b)
     return data.try_emplace({a, b}).first->second;
 }
 
-LCA::LowestCommonAncestor(const Digraph & graph)
-    : graph(graph)
+LCA::LowestCommonAncestor(Digraph graph)
+    : graph(std::move(graph))
 {
 }
 

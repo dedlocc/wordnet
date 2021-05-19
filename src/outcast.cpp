@@ -1,6 +1,6 @@
 #include "wordnet.h"
 
-Outcast::Outcast(WordNet & wordnet)
+Outcast::Outcast(const WordNet & wordnet)
     : wordnet(wordnet)
 {
 }

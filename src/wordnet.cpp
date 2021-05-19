@@ -5,7 +5,6 @@
 
 WordNet::WordNet(const std::string & synsets, const std::string & hypernyms)
     : graph(hypernyms)
-    , lowestCommonAncestor(graph)
 {
     std::ifstream in(synsets);
     std::size_t id;
@@ -39,10 +38,10 @@ bool WordNet::is_noun(const std::string & word) const
 
 std::string WordNet::lca(const std::string & noun1, const std::string & noun2) const
 {
-    return glossary.at(lowestCommonAncestor.ancestor(wordMap.at(noun2), wordMap.at(noun1)));
+    return glossary.at(graph.ancestor(wordMap.at(noun2), wordMap.at(noun1)));
 }
 
 std::size_t WordNet::distance(const std::string & noun1, const std::string & noun2) const
 {
-    return lowestCommonAncestor.length(wordMap.at(noun1), wordMap.at(noun2));
+    return graph.length(wordMap.at(noun1), wordMap.at(noun2));
 }
