@@ -7,6 +7,11 @@ WordNet::WordNet(const std::string & synsets, const std::string & hypernyms)
     : graph(hypernyms)
 {
     std::ifstream in(synsets);
+
+    if (!in) {
+        throw std::runtime_error("Synsets file not found");
+    }
+
     std::size_t id;
     while (in >> id) {
         in.ignore();

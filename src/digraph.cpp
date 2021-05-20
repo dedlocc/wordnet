@@ -6,6 +6,11 @@
 Digraph::Digraph(const std::string & filename)
 {
     std::ifstream in(filename);
+
+    if (!in) {
+        throw std::runtime_error("Hypernyms file not found");
+    }
+
     std::size_t id;
     while (in >> id) {
         auto & adj = edges[id];
