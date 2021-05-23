@@ -54,24 +54,6 @@ private:
         }
     };
 
-    class Cache
-    {
-        using Key = std::pair<std::size_t, std::size_t>;
-
-        struct Hash
-        {
-            std::size_t operator()(Key key) const noexcept;
-        };
-
-        std::unordered_map<Key, Result, Hash> data;
-        std::mutex mutex;
-
-    public:
-        Result & get(std::size_t, std::size_t);
-    };
-
-    mutable Cache cache;
-
     Result bfs(const std::set<std::size_t> &, const std::set<std::size_t> &) const;
 };
 

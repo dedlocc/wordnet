@@ -5,20 +5,6 @@
 
 using LCA = LowestCommonAncestor;
 
-std::size_t LCA::Cache::Hash::operator()(const Key key) const noexcept
-{
-    return (key.first + 1) ^ key.second;
-}
-
-LCA::Result & LCA::Cache::get(std::size_t a, std::size_t b)
-{
-    if (a > b) {
-        std::swap(a, b);
-    }
-    std::lock_guard<std::mutex> lock(mutex);
-    return data.try_emplace({a, b}).first->second;
-}
-
 LCA::LowestCommonAncestor(Digraph graph)
     : graph(std::move(graph))
 {
@@ -46,43 +32,40 @@ std::size_t LCA::ancestor(const std::set<std::size_t> & v, const std::set<std::s
 
 LCA::Result LCA::bfs(const std::set<std::size_t> & v, const std::set<std::size_t> & w) const
 {
-    auto & cached = cache.get(*v.begin(), *w.begin());
+    std::array<std::unordered_map<std::size_t, std::size_t>, 2> visited;
+    std::queue<std::pair<std::size_t, std::size_t>> q;
 
-    if (cached) {
-        return cached;
+    for (const auto & e : v) {
+        visited[0].emplace(e, 0);
+        q.emplace(e, 0);
+    }
+
+    for (const auto & e : w) {
+        if (visited[0].find(e) != visited[0].end()) {
+            return {e, 0};
+        }
+        visited[1].emplace(e, 0);
+        q.emplace(e, 1);
     }
 
     Result result;
 
-    std::unordered_map<std::size_t, std::pair<std::size_t, bool>> visited;
-    std::queue<std::size_t> q;
-
-    for (const auto & e : v) {
-        visited[e] = {0, false};
-        q.push(e);
-    }
-
-    for (const auto & e : w) {
-        if (!visited.emplace(e, std::make_pair(0, true)).second) {
-            return result = {e, 0};
-        }
-        q.push(e);
-    }
-
     while (!q.empty()) {
-        const auto cur = q.front();
+        const auto [cur, i] = q.front();
         q.pop();
 
-        const auto [length, isFirst] = visited.find(cur)->second;
+        auto & current = visited[i];
+        const auto & other = visited[1 - i];
+        const auto length = current.at(cur) + 1;
 
         for (const auto edge : graph[cur]) {
-            const auto & it = visited.find(edge);
-            if (visited.end() == it) {
-                visited[edge] = {length + 1, isFirst};
-                q.push(edge);
+            if (current.emplace(edge, length).second) {
+                q.emplace(edge, i);
             }
-            else if (isFirst != it->second.second) {
-                const auto newLength = length + it->second.first + 1;
+
+            const auto it = other.find(edge);
+            if (it != other.end()) {
+                const auto newLength = length + it->second;
                 if (newLength < result.length) {
                     result = {edge, newLength};
                 }
@@ -91,5 +74,5 @@ LCA::Result LCA::bfs(const std::set<std::size_t> & v, const std::set<std::size_t
     }
 
     assert(result);
-    return cached = result;
+    return result;
 }
