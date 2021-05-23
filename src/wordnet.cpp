@@ -4,7 +4,7 @@
 #include <sstream>
 
 WordNet::WordNet(const std::string & synsets, const std::string & hypernyms)
-    : graph(hypernyms)
+    : graph(Digraph(hypernyms))
 {
     std::ifstream in(synsets);
 

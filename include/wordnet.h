@@ -9,7 +9,7 @@
 class Digraph
 {
 public:
-    Digraph(const std::string & filename);
+    explicit Digraph(const std::string & filename);
 
     // returns set of nodes adjacent to the given one
     const std::unordered_set<std::size_t> & operator[](std::size_t v) const;
