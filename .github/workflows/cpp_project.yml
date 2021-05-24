@@ -25,7 +25,7 @@ jobs:
       uses: DoozyX/clang-format-lint-action@v0.11
       with:
         source: '.'
-        exclude: './googletest ./test'
+        exclude: './googletest ./tests'
         extensions: 'h,cpp'
         clangFormatVersion: 11
     - uses: actions/checkout@v2
@@ -42,7 +42,7 @@ jobs:
       working-directory: ./build
     - name: Run tests
       timeout-minutes: 10
-      run: ./test/runUnitTests
+      run: ./tests/runUnitTests
       working-directory: ./build
     - name: Prepare ASAN build dir
       run: mkdir build_asan
@@ -54,7 +54,7 @@ jobs:
       working-directory: ./build_asan
     - name: Run ASAN tests
       timeout-minutes: 15
-      run: ./test/runUnitTests
+      run: ./tests/runUnitTests
       working-directory: ./build_asan
     - name: Prepare USAN build dir
       run: mkdir build_usan
@@ -66,5 +66,5 @@ jobs:
       working-directory: ./build_usan
     - name: Run USAN tests
       timeout-minutes: 10
-      run: ./test/runUnitTests
+      run: ./tests/runUnitTests
       working-directory: ./build_usan
